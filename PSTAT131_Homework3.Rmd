@@ -5,11 +5,93 @@ date: "2022-10-17"
 output: html_document
 ---
 
-# Homework 3  
+# Homework 3
 
+### Load the Data/ Packages
 
+```{r}
+titanic_data <- read.csv("data/titanic.csv")
+library(tidyverse)
+library(tidymodels)
+```
 
+```{r}
+# Changing `survived` and `pclass` to factors
+titanic_data$survived <- as.factor(titanic_data$survived)
+titanic_data$pclass <- as.factor(titanic_data$pclass)
 
+# Setting the seed
+set.seed(0124)
+head(titanic_data)
+```
+
+### Question 1
+
+```{r}
+# Splitting the data and stratifying on the outcome, `survived`
+titanic_split <- initial_split(titanic_data, prop = 0.70, strata = survived)
+titanic_train <- training(titanic_split)
+titanic_test <- training(titanic_split)
+```
+
+```{r}
+# Verifying that the training and testing data have the correct number of outcomes
+nrow(titanic_train)/nrow(titanic_data)
+nrow(titanic_test)/nrow(titanic_data)
+```
+
+Both the training and testing data have ~70% of the observations of the original data set.
+
+```{r}
+# Checking if there are any missing values in the training data
+colSums(is.na(titanic_train))
+```
+
+There is missing data in the training data (specifically in the `age`, `cabin`, and `embarked` columns). It is a good idea to use stratified sampling for this data so that the amount of missing data in the training and testing data is random and not specifically more in one data set or the other.  
+
+### Question 2  
+
+```{r}
+survived_dist <- ggplot(titanic_train, aes(survived)) +
+  geom_bar()
+survived_dist
+```
+
+The two possible values of the outcome variable `survived` are 'No' and 'Yes' as to whether or not the passenger survived. There are more individuals who did not survived (~380) than individuals who did survive (~240).  
+
+### Question 3  
+
+#NOT INCLUDE AGE??
+```{r}
+# Creating a correlation matrix of all continuous variables with the training data set
+titanic_cor_matrix <- titanic_train %>% 
+  select(-c('passenger_id', 'survived', 'pclass', 'name', 'sex', 'ticket', 'cabin', 'embarked', 'age')) %>% 
+  cor()
+titanic_cor_matrix
+```
+
+```{r}
+library(corrr)
+
+# Creating a visualization of the correlation matrix
+cor_titanic_train <- titanic_train %>% 
+  select(-c('passenger_id', 'survived', 'pclass', 'name', 'sex', 'ticket', 'cabin', 'embarked', 'age')) %>% 
+  correlate()
+cor_titanic_train
+rplot(cor_titanic_train)
+
+# Heat map version of the visualization
+cor_titanic_train_heatmap <- cor_titanic_train %>% 
+  stretch() %>% 
+  ggplot(aes(x, y, fill=r)) +
+    geom_tile() +
+    geom_text(aes(label = as.character(fashion(r))))
+cor_titanic_train_heatmap
+```
+
+It appears that all of the variables have a positive correlation with one another. Most of the correlations are not that strong as `fare` & `parch` only have a correlation of about 0.22 and `fare` & `sib_sp` only have a correlation of about 0.18. We can see that `sib_sp` and `parch` have the greatest correlation and it is only about 0.42.  
+
+### Question 4  
 
 
 
