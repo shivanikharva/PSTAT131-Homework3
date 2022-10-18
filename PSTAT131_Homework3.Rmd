@@ -1,0 +1,29 @@
+---
+title: "PSTAT131 Homework 3"
+author: "Shivani Kharva"
+date: "2022-10-17"
+output: html_document
+---
+
+# Homework 3  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
