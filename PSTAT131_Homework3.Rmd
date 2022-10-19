@@ -193,10 +193,10 @@ nb_fit <- fit(nb_workflow, titanic_train)
 
 ### Question 10  
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 # Generating predictions for logistic regression
 log_tibble <- predict(log_fit, new_data = titanic_train %>% 
-                        select(-survived), type = "class")
+                        select(-survived), type = "prob")
 log_tibble <- bind_cols(log_tibble, titanic_train %>% 
                               select(survived))
 
@@ -219,7 +219,7 @@ nb_tibble <- bind_cols(nb_tibble, titanic_train %>%
                               select(survived))
 ```
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 log_reg_acc <- augment(log_fit, new_data = titanic_train) %>% 
   accuracy(truth = survived, estimate = .pred_class)
 lda_acc <- augment(lda_fit, new_data = titanic_train) %>% 
@@ -236,7 +236,7 @@ results %>%
   arrange(-accuracies)
 ```
 
-Logistic regressoin achieved the highest accuracy on the training data.  
+Logistic regression achieved the highest accuracy on the training data.  
 
 ### Question 10  
 
