@@ -196,7 +196,7 @@ nb_fit <- fit(nb_workflow, titanic_train)
 ```{r, message=FALSE, warning=FALSE}
 # Generating predictions for logistic regression
 log_tibble <- predict(log_fit, new_data = titanic_train %>% 
-                        select(-survived), type = "prob")
+                        select(-survived), type = "class")
 log_tibble <- bind_cols(log_tibble, titanic_train %>% 
                               select(survived))
 
@@ -241,10 +241,23 @@ Logistic regression achieved the highest accuracy on the training data.
 ### Question 10  
 
 ```{r}
-
+# Fitting logistic regression to testing data
+log_test_tibble <- predict(log_fit, new_data = titanic_test %>% 
+                        select(-survived), type = "prob")
+log_test_tibble <- bind_cols(log_tibble, titanic_test %>% 
+                              select(survived))
 ```
 
+```{r}
+# Accuracy of model on testing data
+log_reg_test_acc <- augment(log_fit, new_data = titanic_test) %>% 
+  accuracy(truth = survived, estimate = .pred_class)
 
+results2 <- tibble(model = "Logistic Regression", accuracy = log_reg_test_acc$.estimate)
+results2
+```
+
+The logistic regression
 
 
 
