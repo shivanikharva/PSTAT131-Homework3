@@ -93,9 +93,93 @@ It appears that all of the variables have a positive correlation with one anothe
 
 ### Question 4  
 
+```{r}
+# Creating a recipe using the specified predictors
+titanic_recipe <- recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, data = titanic_data) %>% 
+  # Using imputation to deal with missing age values
+  step_impute_linear(age) %>% 
+  # Encoding categorical predictors
+  step_dummy(all_nominal_predictors()) %>% 
+  # Including interactions
+  step_interact(terms = ~ starts_with("sex"):fare + age:fare)
+```
 
+### Question 5  
 
+```{r}
+# Specifying logistic regression model for classification using glm engine
+log_reg <- logistic_reg() %>%
+  set_engine("glm") %>% 
+  set_mode("classification")
 
+# Creating workflow
+log_workflow <- workflow() %>% 
+  # Adding the model
+  add_model(log_reg) %>% 
+  # Adding the recipe
+  add_recipe(titanic_recipe)
+
+# Using fit() to apply workflow to training data and storing it
+log_fit <- fit(log_workflow, titanic_train)
+```
+
+### Question 6  
+
+```{r}
+# Specifying linear discriminant analysis model using MASS engine
+lda_mod <- discrim_linear() %>% 
+  set_mode("classification") %>% 
+  set_engine("MASS")
+
+# Creating workflow
+lda_workflow <- workflow() %>% 
+  # Adding the model
+  add_model(lda_mod) %>% 
+  # Adding the recipe
+  add_recipe(titanic_recipe)
+
+# Using fit() to apply workflow to training data and storing it
+lda_fit <- fit(lda_workflow, titanic_train)
+```
+
+### Question 7  
+
+```{r}
+# Specifying quadratic discriminant analysis model using MASS engine
+qda_mod <- discrim_quad() %>% 
+  set_mode("classification") %>% 
+  set_engine("MASS")
+
+# Creating workflow
+qda_workflow <- workflow() %>% 
+  # Adding the model
+  add_model(qda_mod) %>% 
+  # Adding the recipe
+  add_recipe(titanic_recipe)
+
+# Using fit() to apply workflow to training data and storing it
+qda_fit <- fit(qda_workflow, titanic_train)
+```
+
+### Question 8  
+
+```{r}
+# Specifying naive Bayes model for classification using klaR engine
+nb_mod <- naive_Bayes() %>% 
+  set_mode("classification") %>% 
+  set_engine("klaR") %>% 
+  set_args(usekernel = FALSE)
+
+# Creating workflow
+nb_workflow <- workflow() %>% 
+  # Adding model
+  add_model(nb_mod) %>% 
+  # Adding recipe
+  add_recipe(titanic_recipe)
+
+# Using fit() to apply workflow to training data and storing it
+nb_fit <- fit(nb_workflow, titanic_train)
+```
 
 
 
