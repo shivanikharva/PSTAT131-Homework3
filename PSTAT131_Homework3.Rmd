@@ -11,13 +11,19 @@ output: html_document
 
 ```{r}
 titanic_data <- read.csv("data/titanic.csv")
-library(tidyverse)
 library(tidymodels)
+library(discrim)
+library(poissonreg)
+library(corrr)
+library(klaR) # for naive bayes
+tidymodels_prefer()
 ```
 
 ```{r}
 # Changing `survived` and `pclass` to factors
-titanic_data$survived <- as.factor(titanic_data$survived)
+survived_levels <- c("Yes", "No")
+
+titanic_data$survived <- factor(titanic_data$survived, levels = survived_levels)
 titanic_data$pclass <- as.factor(titanic_data$pclass)
 
 # Setting the seed
@@ -49,6 +55,11 @@ colSums(is.na(titanic_train))
 
 There is missing data in the training data (specifically in the `age`, `cabin`, and `embarked` columns). It is a good idea to use stratified sampling for this data so that the amount of missing data in the training and testing data is random and not specifically more in one data set or the other.  
 
+```{r}
+titanic_train %>% 
+  summary()
+```
+
 ### Question 2  
 
 ```{r}
@@ -61,11 +72,10 @@ The two possible values of the outcome variable `survived` are 'No' and 'Yes' as
 
 ### Question 3  
 
-#NOT INCLUDE AGE??
 ```{r}
 # Creating a correlation matrix of all continuous variables with the training data set
 titanic_cor_matrix <- titanic_train %>% 
-  select(-c('passenger_id', 'survived', 'pclass', 'name', 'sex', 'ticket', 'cabin', 'embarked', 'age')) %>% 
+  select(-c('passenger_id', 'survived', 'pclass', 'name', 'sex', 'ticket', 'cabin', 'embarked')) %>% 
   cor()
 titanic_cor_matrix
 ```
@@ -75,7 +85,7 @@ library(corrr)
 
 # Creating a visualization of the correlation matrix
 cor_titanic_train <- titanic_train %>% 
-  select(-c('passenger_id', 'survived', 'pclass', 'name', 'sex', 'ticket', 'cabin', 'embarked', 'age')) %>% 
+  select(-c('passenger_id', 'survived', 'pclass', 'name', 'sex', 'ticket', 'cabin', 'embarked')) %>% 
   correlate()
 cor_titanic_train
 rplot(cor_titanic_train)
@@ -97,7 +107,7 @@ It appears that all of the variables have a positive correlation with one anothe
 # Creating a recipe using the specified predictors
 titanic_recipe <- recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, data = titanic_data) %>% 
   # Using imputation to deal with missing age values
-  step_impute_linear(age) %>% 
+  step_impute_linear(age, impute_with = imp_vars(pclass, sex, sib_sp, parch, fare)) %>% 
   # Encoding categorical predictors
   step_dummy(all_nominal_predictors()) %>% 
   # Including interactions
@@ -181,7 +191,58 @@ nb_workflow <- workflow() %>%
 nb_fit <- fit(nb_workflow, titanic_train)
 ```
 
+### Question 10  
 
+```{r}
+# Generating predictions for logistic regression
+log_tibble <- predict(log_fit, new_data = titanic_train %>% 
+                        select(-survived), type = "class")
+log_tibble <- bind_cols(log_tibble, titanic_train %>% 
+                              select(survived))
+
+# Generating predictions for LDA
+lda_tibble <- predict(lda_fit, new_data = titanic_train %>% 
+                        select(-survived), type = "class")
+lda_tibble <- bind_cols(lda_tibble, titanic_train %>% 
+                              select(survived))
+
+# Generating predictions for QDA
+qda_tibble <- predict(qda_fit, new_data = titanic_train %>% 
+                        select(-survived), type = "class")
+qda_tibble <- bind_cols(qda_tibble, titanic_train %>% 
+                              select(survived))
+
+# Generating predictions for Naive Bayes
+nb_tibble <- predict(nb_fit, new_data = titanic_train %>% 
+                        select(-survived), type = "class")
+nb_tibble <- bind_cols(nb_tibble, titanic_train %>% 
+                              select(survived))
+```
+
+```{r}
+log_reg_acc <- augment(log_fit, new_data = titanic_train) %>% 
+  accuracy(truth = survived, estimate = .pred_class)
+lda_acc <- augment(lda_fit, new_data = titanic_train) %>% 
+  accuracy(truth = survived, estimate = .pred_class)
+qda_acc <- augment(qda_fit, new_data = titanic_train) %>% 
+  accuracy(truth = survived, estimate = .pred_class)
+nb_acc <- augment(nb_fit, new_data = titanic_train) %>% 
+  accuracy(truth = survived, estimate = .pred_class)
+
+accuracies <- c(log_reg_acc$.estimate, lda_acc$.estimate, nb_acc$.estimate, qda_acc$.estimate)
+models <- c("Logistic Regression", "LDA", "Naive Bayes", "QDA")
+results <- tibble(accuracies = accuracies, models = models)
+results %>% 
+  arrange(-accuracies)
+```
+
+Logistic regressoin achieved the highest accuracy on the training data.  
+
+### Question 10  
+
+```{r}
+
+```
 
 
 
