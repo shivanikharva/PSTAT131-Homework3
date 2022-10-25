@@ -105,9 +105,13 @@ It appears that all of the variables have a positive correlation with one anothe
 
 ```{r}
 # Creating a recipe using the specified predictors
-titanic_recipe <- recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, data = titanic_data) %>% 
+titanic_recipe <- recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, data = titanic_train) %>% 
   # Using imputation to deal with missing age values
-  step_impute_linear(age, impute_with = imp_vars(pclass, sex, sib_sp, parch, fare)) %>% 
+  step_impute_linear(age, impute_with = imp_vars
+                     
+                     
+                     
+                     (pclass, sex, sib_sp, parch, fare)) %>% 
   # Encoding categorical predictors
   step_dummy(all_nominal_predictors()) %>% 
   # Including interactions
@@ -191,7 +195,7 @@ nb_workflow <- workflow() %>%
 nb_fit <- fit(nb_workflow, titanic_train)
 ```
 
-### Question 10  
+### Question 9  
 
 ```{r, message=FALSE, warning=FALSE}
 # Generating predictions for logistic regression
@@ -244,7 +248,7 @@ Logistic regression achieved the highest accuracy on the training data.
 # Fitting logistic regression to testing data
 log_test_tibble <- predict(log_fit, new_data = titanic_test %>% 
                         select(-survived), type = "prob")
-log_test_tibble <- bind_cols(log_tibble, titanic_test %>% 
+log_test_tibble <- bind_cols(log_test_tibble, titanic_test %>% 
                               select(survived))
 ```
 
@@ -257,7 +261,32 @@ results2 <- tibble(model = "Logistic Regression", accuracy = log_reg_test_acc$.e
 results2
 ```
 
-The logistic regression
+The logistic regression has an accuracy of 0.8138042.  
+
+```{r}
+# Creating a confusion matrix
+log_confusion_matrix <- augment(log_fit, new_data = titanic_test) %>% 
+  conf_mat(truth = survived, estimate = .pred_class)
+log_confusion_matrix
+
+# Visualizing the confusion matrix
+log_confusion_matrix_viz <- augment(log_fit, new_data = titanic_test) %>% 
+  conf_mat(truth = survived, estimate = .pred_class) %>% 
+  autoplot(type = "heatmap")
+log_confusion_matrix_viz
+```
+
+```{r}
+library(pROC)
+# Plotting ROC curve
+log_roc <- augment(log_fit, new_data = titanic_test) %>% 
+  roc_curve(survived, .pred_Yes) %>% 
+  autoplot()
+log_roc
+
+# Finding AUC
+auc(titanic_test$survived, log_test_tibble$.pred_Yes)
+```
 
 
 
