@@ -37,7 +37,7 @@ head(titanic_data)
 # Splitting the data and stratifying on the outcome, `survived`
 titanic_split <- initial_split(titanic_data, prop = 0.70, strata = survived)
 titanic_train <- training(titanic_split)
-titanic_test <- training(titanic_split)
+titanic_test <- testing(titanic_split)
 ```
 
 ```{r}
@@ -46,21 +46,19 @@ nrow(titanic_train)/nrow(titanic_data)
 nrow(titanic_test)/nrow(titanic_data)
 ```
 
-Both the training and testing data have ~70% of the observations of the original data set.
+The training data has \~70% of the observations of the original data set and the testing data has \~30% of the observations of the original data set.
 
 ```{r}
-# Checking if there are any missing values in the training data
-colSums(is.na(titanic_train))
-```
-
-There is missing data in the training data (specifically in the `age`, `cabin`, and `embarked` columns). It is a good idea to use stratified sampling for this data so that the amount of missing data in the training and testing data is random and not specifically more in one data set or the other.  
-
-```{r}
+# Looking at a general summary of the data
 titanic_train %>% 
   summary()
 ```
 
-### Question 2  
+The summary indicates that there is missing data in the training data in the `age` column. It is significant that `age` has missing data because we plan to use `age` as a predictor in our model. Therefore, it is a good idea to use stratified sampling for this data so that the amount of missing data in the training and testing data is random and not specifically more in one data set or the other.
+
+Also, the summary reveals that there are more individuals who did not survive than those who survived. This may point to the potential issue of the accuracy not being a very good measure of the data since, if the model defaults to 'No', its accuracy might still be high because there are more data points of individuals who did not survive than those who did survive.
+
+### Question 2
 
 ```{r}
 survived_dist <- ggplot(titanic_train, aes(survived)) +
@@ -68,17 +66,9 @@ survived_dist <- ggplot(titanic_train, aes(survived)) +
 survived_dist
 ```
 
-The two possible values of the outcome variable `survived` are 'No' and 'Yes' as to whether or not the passenger survived. There are more individuals who did not survived (~380) than individuals who did survive (~240).  
+The two possible values of the outcome variable `survived` are 'No' and 'Yes' as to whether or not the passenger survived. There are more individuals who did not survived (\~380) than individuals who did survive (\~240).
 
-### Question 3  
-
-```{r}
-# Creating a correlation matrix of all continuous variables with the training data set
-titanic_cor_matrix <- titanic_train %>% 
-  select(-c('passenger_id', 'survived', 'pclass', 'name', 'sex', 'ticket', 'cabin', 'embarked')) %>% 
-  cor()
-titanic_cor_matrix
-```
+### Question 3
 
 ```{r}
 library(corrr)
@@ -88,7 +78,6 @@ cor_titanic_train <- titanic_train %>%
   select(-c('passenger_id', 'survived', 'pclass', 'name', 'sex', 'ticket', 'cabin', 'embarked')) %>% 
   correlate()
 cor_titanic_train
-rplot(cor_titanic_train)
 
 # Heat map version of the visualization
 cor_titanic_train_heatmap <- cor_titanic_train %>% 
@@ -99,26 +88,22 @@ cor_titanic_train_heatmap <- cor_titanic_train %>%
 cor_titanic_train_heatmap
 ```
 
-It appears that all of the variables have a positive correlation with one another. Most of the correlations are not that strong as `fare` & `parch` only have a correlation of about 0.22 and `fare` & `sib_sp` only have a correlation of about 0.18. We can see that `sib_sp` and `parch` have the greatest correlation and it is only about 0.42.  
+It appears that none of the predictors have a very strong correlation with one another since the highest correlation is between `parch` & `sib_sp` (\~0.407). The predictors with a positive correlation are `age` & `fare` (\~0.099), `sib_sp` & `parch` (\~0.407), `sib_sp` & `fare` (\~0.153), and `parch` & `fare` (\~0.175). The predictors with a negative correlation are `age` & `sib_sp` (\~-0.337) and `age` & `parch` (\~-0.198).
 
-### Question 4  
+### Question 4
 
 ```{r}
 # Creating a recipe using the specified predictors
 titanic_recipe <- recipe(survived ~ pclass + sex + age + sib_sp + parch + fare, data = titanic_train) %>% 
   # Using imputation to deal with missing age values
-  step_impute_linear(age, impute_with = imp_vars
-                     
-                     
-                     
-                     (pclass, sex, sib_sp, parch, fare)) %>% 
+  step_impute_linear(age, impute_with = imp_vars(pclass, sex, sib_sp, parch, fare)) %>% 
   # Encoding categorical predictors
   step_dummy(all_nominal_predictors()) %>% 
   # Including interactions
   step_interact(terms = ~ starts_with("sex"):fare + age:fare)
 ```
 
-### Question 5  
+### Question 5
 
 ```{r}
 # Specifying logistic regression model for classification using glm engine
@@ -137,7 +122,7 @@ log_workflow <- workflow() %>%
 log_fit <- fit(log_workflow, titanic_train)
 ```
 
-### Question 6  
+### Question 6
 
 ```{r}
 # Specifying linear discriminant analysis model using MASS engine
@@ -156,7 +141,7 @@ lda_workflow <- workflow() %>%
 lda_fit <- fit(lda_workflow, titanic_train)
 ```
 
-### Question 7  
+### Question 7
 
 ```{r}
 # Specifying quadratic discriminant analysis model using MASS engine
@@ -175,7 +160,7 @@ qda_workflow <- workflow() %>%
 qda_fit <- fit(qda_workflow, titanic_train)
 ```
 
-### Question 8  
+### Question 8
 
 ```{r}
 # Specifying naive Bayes model for classification using klaR engine
@@ -195,7 +180,7 @@ nb_workflow <- workflow() %>%
 nb_fit <- fit(nb_workflow, titanic_train)
 ```
 
-### Question 9  
+### Question 9
 
 ```{r, message=FALSE, warning=FALSE}
 # Generating predictions for logistic regression
@@ -240,9 +225,9 @@ results %>%
   arrange(-accuracies)
 ```
 
-Logistic regression achieved the highest accuracy on the training data.  
+Logistic regression achieved the highest accuracy, 0.8234350, on the training data.
 
-### Question 10  
+### Question 10
 
 ```{r}
 # Fitting logistic regression to testing data
@@ -261,7 +246,7 @@ results2 <- tibble(model = "Logistic Regression", accuracy = log_reg_test_acc$.e
 results2
 ```
 
-The logistic regression has an accuracy of 0.8138042.  
+The logistic regression has an accuracy of 0.7835821 on the testing data.
 
 ```{r}
 # Creating a confusion matrix
@@ -277,7 +262,6 @@ log_confusion_matrix_viz
 ```
 
 ```{r}
-library(pROC)
 # Plotting ROC curve
 log_roc <- augment(log_fit, new_data = titanic_test) %>% 
   roc_curve(survived, .pred_Yes) %>% 
@@ -285,14 +269,14 @@ log_roc <- augment(log_fit, new_data = titanic_test) %>%
 log_roc
 
 # Finding AUC
-auc(titanic_test$survived, log_test_tibble$.pred_Yes)
+log_test_tibble %>% 
+  roc_auc(survived, .pred_Yes)
 ```
 
+**How did the model perform?**
 
+Based on the ROC curve and the AUC, the logistic regression model performed relatively well. Since the AUC is 0.8254192, the model does fairly well at discriminating between classes (whether a person survived or not). Also the ROC curve is curved upward towards the left, which makes sense with the high AUC.
 
+**Compare its training and testing accuracies. If the values differ, why do you think this is so?**
 
-
-
-
-
-
+The training accuracy of the logistic regression model was 0.8234350 and the testing accuracy of the model was 0.7835821. The values do not differ greatly, but the testing accuracy is less than the training accuracy. This is because the model was trained on the training data and is more used to those values; however, the testing data renders a lower accuracy because the model was not trained on those values so this accuracy reflects its performance on a completely new set of values that it does not already know.
