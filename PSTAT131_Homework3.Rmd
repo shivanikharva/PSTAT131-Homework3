@@ -188,24 +188,28 @@ log_tibble <- predict(log_fit, new_data = titanic_train %>%
                         select(-survived), type = "class")
 log_tibble <- bind_cols(log_tibble, titanic_train %>% 
                               select(survived))
+log_tibble
 
 # Generating predictions for LDA
 lda_tibble <- predict(lda_fit, new_data = titanic_train %>% 
                         select(-survived), type = "class")
 lda_tibble <- bind_cols(lda_tibble, titanic_train %>% 
                               select(survived))
+lda_tibble
 
 # Generating predictions for QDA
 qda_tibble <- predict(qda_fit, new_data = titanic_train %>% 
                         select(-survived), type = "class")
 qda_tibble <- bind_cols(qda_tibble, titanic_train %>% 
                               select(survived))
+qda_tibble
 
 # Generating predictions for Naive Bayes
 nb_tibble <- predict(nb_fit, new_data = titanic_train %>% 
                         select(-survived), type = "class")
 nb_tibble <- bind_cols(nb_tibble, titanic_train %>% 
                               select(survived))
+nb_tibble
 ```
 
 ```{r, message=FALSE, warning=FALSE}
