@@ -66,7 +66,7 @@ survived_dist <- ggplot(titanic_train, aes(survived)) +
 survived_dist
 ```
 
-The two possible values of the outcome variable `survived` are 'No' and 'Yes' as to whether or not the passenger survived. There are more individuals who did not survived (\~380) than individuals who did survive (\~240).
+The two possible values of the outcome variable `survived` are 'No' and 'Yes' as to whether or not the passenger survived. There are more individuals who did not survived (384) than individuals who did survive (239), which was also shown in the summary from the previous question.
 
 ### Question 3
 
@@ -88,7 +88,7 @@ cor_titanic_train_heatmap <- cor_titanic_train %>%
 cor_titanic_train_heatmap
 ```
 
-It appears that none of the predictors have a very strong correlation with one another since the highest correlation is between `parch` & `sib_sp` (\~0.407). The predictors with a positive correlation are `age` & `fare` (\~0.099), `sib_sp` & `parch` (\~0.407), `sib_sp` & `fare` (\~0.153), and `parch` & `fare` (\~0.175). The predictors with a negative correlation are `age` & `sib_sp` (\~-0.337) and `age` & `parch` (\~-0.198).
+It appears that none of the predictors have a very strong correlation with one another since the highest correlation is between `parch` & `sib_sp` (\~0.419). The predictors with a positive correlation are `age` & `fare` (\~0.075), `sib_sp` & `parch` (\~0.419), `sib_sp` & `fare` (\~0.175), and `parch` & `fare` (\~0.223). The predictors with a negative correlation are `age` & `sib_sp` (\~-0.309) and `age` & `parch` (\~-0.209).
 
 ### Question 4
 
@@ -229,7 +229,7 @@ results %>%
   arrange(-accuracies)
 ```
 
-Logistic regression achieved the highest accuracy, 0.8234350, on the training data.
+Logistic regression achieved the highest accuracy, 0.8138042, on the training data.
 
 ### Question 10
 
@@ -250,7 +250,7 @@ results2 <- tibble(model = "Logistic Regression", accuracy = log_reg_test_acc$.e
 results2
 ```
 
-The logistic regression has an accuracy of 0.7835821 on the testing data.
+The logistic regression has an accuracy of 0.7985075 on the testing data.
 
 ```{r}
 # Creating a confusion matrix
@@ -279,8 +279,8 @@ log_test_tibble %>%
 
 **How did the model perform?**
 
-Based on the ROC curve and the AUC, the logistic regression model performed relatively well. Since the AUC is 0.8254192, the model does fairly well at discriminating between classes (whether a person survived or not). Also the ROC curve is curved upward towards the left, which makes sense with the high AUC.
+Based on the ROC curve and the AUC, the logistic regression model performed relatively well. Since the AUC is 0.8616946, the model does fairly well at discriminating between classes (whether a person survived or not). Also the ROC curve is curved upward towards the left, which explains the high AUC.
 
 **Compare its training and testing accuracies. If the values differ, why do you think this is so?**
 
-The training accuracy of the logistic regression model was 0.8234350 and the testing accuracy of the model was 0.7835821. The values do not differ greatly, but the testing accuracy is less than the training accuracy. This is because the model was trained on the training data and is more used to those values; however, the testing data renders a lower accuracy because the model was not trained on those values so this accuracy reflects its performance on a completely new set of values that it does not already know.
+The training accuracy of the logistic regression model was 0.8138042 and the testing accuracy of the model was 0.7985075. The values do not differ greatly, but the testing accuracy is less than the training accuracy. This is because the model was trained on the training data and is more used to those values; however, the testing data renders a lower accuracy because the model was not trained on those values so this accuracy reflects its performance on a completely new set of values that it does not already know.
