@@ -284,3 +284,4 @@ Based on the ROC curve and the AUC, the logistic regression model performed rela
 **Compare its training and testing accuracies. If the values differ, why do you think this is so?**
 
 The training accuracy of the logistic regression model was 0.8138042 and the testing accuracy of the model was 0.7985075. The values do not differ greatly, but the testing accuracy is less than the training accuracy. This is because the model was trained on the training data and is more used to those values; however, the testing data renders a lower accuracy because the model was not trained on those values so this accuracy reflects its performance on a completely new set of values that it does not already know.
+
