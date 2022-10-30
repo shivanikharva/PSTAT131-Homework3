@@ -28,6 +28,8 @@ titanic_data$pclass <- as.factor(titanic_data$pclass)
 
 # Setting the seed
 set.seed(0124)
+
+# Viewing the data
 head(titanic_data)
 ```
 
@@ -54,11 +56,14 @@ titanic_train %>%
   summary()
 ```
 
-The summary indicates that there is missing data in the training data in the `age` column. It is significant that `age` has missing data because we plan to use `age` as a predictor in our model. Therefore, it is a good idea to use stratified sampling for this data so that the amount of missing data in the training and testing data is random and not specifically more in one data set or the other.
+The summary indicates that there is missing data in the training data in the `age` column (124 NA values). It is significant that `age` has missing data because we plan to use `age` as a predictor in our model.
 
-Also, the summary reveals that there are more individuals who did not survive than those who survived. This may point to the potential issue of the accuracy not being a very good measure of the data since, if the model defaults to 'No', its accuracy might still be high because there are more data points of individuals who did not survive than those who did survive.
+Also, the summary reveals that there are more individuals who did not survive than those who survived. This may point to the potential issue of the accuracy not being a very good measure of the data since, if the model defaults to 'No', its accuracy might still be high because there are more data points of individuals who did not survive than those who did survive.  
 
-### Question 2
+**Why is it a good idea to use stratified sampling for this data?**   
+It is a good idea to use stratified sampling for this data because there are more people who did not survive than those who did. However, we still want to train the model equally on 'yes' and 'no' and stratified sampling allows us to do that. Stratifying on `survived` makes sure the distribution of `survived` in the training set is the same as the distribution of `survived` in the testing set. Therefore, it is a good idea to use stratified sampling for this data.  
+
+### Question 2  
 
 ```{r}
 survived_dist <- ggplot(titanic_train, aes(survived)) +
@@ -68,7 +73,7 @@ survived_dist
 
 The two possible values of the outcome variable `survived` are 'No' and 'Yes' as to whether or not the passenger survived. There are more individuals who did not survived (384) than individuals who did survive (239), which was also shown in the summary from the previous question.
 
-### Question 3
+### Question 3  
 
 ```{r}
 library(corrr)
@@ -188,28 +193,24 @@ log_tibble <- predict(log_fit, new_data = titanic_train %>%
                         select(-survived), type = "class")
 log_tibble <- bind_cols(log_tibble, titanic_train %>% 
                               select(survived))
-log_tibble
 
 # Generating predictions for LDA
 lda_tibble <- predict(lda_fit, new_data = titanic_train %>% 
                         select(-survived), type = "class")
 lda_tibble <- bind_cols(lda_tibble, titanic_train %>% 
                               select(survived))
-lda_tibble
 
 # Generating predictions for QDA
 qda_tibble <- predict(qda_fit, new_data = titanic_train %>% 
                         select(-survived), type = "class")
 qda_tibble <- bind_cols(qda_tibble, titanic_train %>% 
                               select(survived))
-qda_tibble
 
 # Generating predictions for Naive Bayes
 nb_tibble <- predict(nb_fit, new_data = titanic_train %>% 
                         select(-survived), type = "class")
 nb_tibble <- bind_cols(nb_tibble, titanic_train %>% 
                               select(survived))
-nb_tibble
 ```
 
 ```{r, message=FALSE, warning=FALSE}
@@ -279,7 +280,7 @@ log_test_tibble %>%
 
 **How did the model perform?**
 
-Based on the ROC curve and the AUC, the logistic regression model performed relatively well. Since the AUC is 0.8616946, the model does fairly well at discriminating between classes (whether a person survived or not). Also the ROC curve is curved upward towards the left, which explains the high AUC.
+Based on the ROC curve and the AUC, the logistic regression model performed relatively well. Since the AUC is 0.8616946, the model does fairly well at discriminating between classes (whether a person survived or not). Also the ROC curve is curved upward towards the top left, which explains the high AUC.
 
 **Compare its training and testing accuracies. If the values differ, why do you think this is so?**
 
